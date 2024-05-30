@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HTML Stream</title>
+    <link rel="stylesheet" href="static/css/styles.css">
+</head>
+<body>
+    <h1>Stream HTML Example</h1>
+    <button onclick="startStream()">Generate Response</button>
+    <button onclick="stopStream()">Stop</button>
+    <button onclick="clearText()">Clear</button>
+    <div id="response" style="margin-top: 10px;"></div>
+
+    <script>
+        let source;
+
+        function startStream() {
+            let responseText = '';
+            source = new EventSource('/stream');
+            source.onmessage = function(event) {
+                if (event.data === '[DONE]') {
+                    source.close();
+                } else {
+                    responseText += event.data;
+                    document.getElementById('response').innerHTML = responseText;
+                }
+            };
+            source.onerror = function(event) {
+                if (event.target.readyState === EventSource.CLOSED) {
+                    source.close();
+                }
+            };
+        }
+
+        function stopStream() {
+            if (source) {
+                source.close();
+            }
+        }
+
+        function clearText() {
+            document.getElementById('response').innerHTML = "";
+        }
+    </script>
+</body>
+</html>

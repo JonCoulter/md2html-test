@@ -1,0 +1,9 @@
+.list-item {
+    margin-left: 20px;
+    text-indent: -10px;
+  }
+  
+  .list-item:before {
+    content: " • ";
+  }
+  
