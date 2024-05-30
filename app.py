@@ -1,10 +1,16 @@
 from flask import Flask, render_template, Response
 from flask_socketio import SocketIO
 import anthropic
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 client = anthropic.Anthropic()
+
+def strip_and_save_guide(html_text: str):
+    soup = BeautifulSoup(html_text, 'html.parser')
+    plaintext = soup.get_text()
+    print(plaintext)
 
 @app.route('/')
 def index():
@@ -13,6 +19,7 @@ def index():
 @app.route('/stream')
 def stream():
     def generate():
+        message = ""
         with client.messages.stream(
             messages=[{"role": "user", "content": """
                                                     Your job is to intervene on a chatroom to ease tension and seek common ground.
@@ -34,9 +41,10 @@ def stream():
             model="claude-3-opus-20240229",
         ) as stream:
             for text in stream.text_stream:
-                print(text, end="")
+                message += text
                 yield f"data: {text}\n\n"
             yield "data: [DONE]\n\n"
+            strip_and_save_guide(message)
         
     return Response(generate(), mimetype='text/event-stream')
 
